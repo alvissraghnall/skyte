@@ -3,7 +3,7 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { useState } from "react";
 
-export const Route = createFileRoute("/templates")({
+export const Route = createFileRoute("/_layout/templates")({
   component: Templates,
 });
 
@@ -20,8 +20,8 @@ const PRESETS = [
     width: "120px",
   },
   {
-    id: "pixel-9",
-    name: "Pixel 9 (1080 x 2400)",
+    id: "pixel-9-pro",
+    name: "Pixel 9 Pro (1080 x 2400)",
     description: "Portrait • 20:9 Aspect Ratio",
     badge: "Android Standard",
     image:
@@ -58,7 +58,6 @@ function Templates() {
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // No useEffect needed here! We can compute the filtered list directly during render.
   const filteredPresets = PRESETS.filter((preset) => {
     const matchesFilter = filter === "all" || preset.type === filter;
     const matchesSearch = preset.name
@@ -68,47 +67,12 @@ function Templates() {
   });
 
   return (
-    <div className="bg-background text-on-surface min-h-screen flex flex-col antialiased">
-      {/* TopNavBar */}
-      <header className="bg-surface/80 backdrop-blur-md flex justify-between items-center w-full px-margin-page h-16 border-b border-white/5 sticky top-0 z-50">
-        <div className="flex items-center gap-8">
-          <Link
-            to="/"
-            className="text-headline-md font-metropolis font-black text-primary tracking-tighter hover:opacity-80 transition-opacity"
-          >
-            SKYTE
-          </Link>
-          <nav className="hidden md:flex gap-8">
-            <Link
-              to="/editor"
-              className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
-            >
-              Editor
-            </Link>
-            <Link
-              to="/history"
-              className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
-            >
-              UI Library
-            </Link>
-            <Link
-              to="/showcase"
-              className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
-            >
-              Showcase
-            </Link>
-          </nav>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button>Go Pro</Button>
-        </div>
-      </header>
-
+    <div className="flex flex-col flex-1 overflow-hidden relative">
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-margin-page pb-24">
-          <div className="max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="max-w-350 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <header className="mb-12">
               <h1 className="text-display-lg font-display-lg text-white mb-4 uppercase tracking-tight">
                 Resolution Presets
@@ -185,7 +149,7 @@ function Templates() {
                   className="group relative bg-surface-container rounded-2xl overflow-hidden border border-white/5 flex flex-col cursor-pointer transition-transform hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl duration-300"
                 >
                   <div className="h-64 bg-surface-container-highest relative flex items-center justify-center p-8 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-linear-to-b from-white/2 to-transparent pointer-events-none"></div>
                     {/* Flat UI Screenshot */}
                     <div
                       className="bg-[#121212] rounded-md shadow-2xl overflow-hidden border border-white/10 z-10 scale-110"
@@ -246,22 +210,6 @@ function Templates() {
           </div>
         </main>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-background text-on-surface-variant font-hanken text-label-sm py-8 border-t border-white/5 opacity-80 hover:opacity-100 transition-opacity w-full px-margin-page flex justify-between items-center z-10">
-        <div>© 2026 SKYTE. Not affiliated with Spotify AB.</div>
-        <nav className="flex gap-6">
-          <a className="hover:text-primary transition-colors" href="#">
-            Privacy Policy
-          </a>
-          <a className="hover:text-primary transition-colors" href="#">
-            Terms of Service
-          </a>
-          <a className="hover:text-primary transition-colors" href="#">
-            API Documentation
-          </a>
-        </nav>
-      </footer>
     </div>
   );
 }

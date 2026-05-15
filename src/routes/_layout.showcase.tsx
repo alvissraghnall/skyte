@@ -1,8 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/showcase')({
+export const Route = createFileRoute("/_layout/showcase")({
   component: Showcase,
-})
+});
 
 function Showcase() {
   return (
@@ -12,5 +12,5 @@ function Showcase() {
         Explore community-generated mockups.
       </p>
     </div>
-  )
+  );
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 
-export const Route = createFileRoute("/history")({
+export const Route = createFileRoute("/_layout/history")({
   component: History,
 });
 
@@ -64,56 +64,12 @@ function History() {
   }, [history, searchQuery]);
 
   return (
-    <div className="bg-background text-on-surface font-body-md min-h-screen flex flex-col antialiased selection:bg-primary/30">
-      {/* TopNavBar */}
-      <header className="bg-surface/80 backdrop-blur-md font-hanken text-body-md top-0 z-50 sticky border-b border-white/5 w-full">
-        <div className="flex justify-between items-center w-full px-margin-page h-16 max-w-full mx-auto">
-          <div className="flex items-center gap-8">
-            <Link
-              to="/"
-              className="text-headline-md font-metropolis font-black text-primary tracking-tighter hover:opacity-80 transition-opacity uppercase"
-            >
-              SKYTE
-            </Link>
-            <nav className="hidden md:flex gap-8 items-center h-full">
-              <Link
-                to="/editor"
-                className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
-              >
-                Editor
-              </Link>
-              <Link
-                to="/templates"
-                className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
-              >
-                Presets
-              </Link>
-              <Link
-                to="/showcase"
-                className="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200"
-              >
-                Showcase
-              </Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button>Go Pro</Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-on-surface-variant hover:text-primary hidden md:flex"
-            >
-              <span className="material-symbols-outlined">settings</span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <div className="flex flex-col relative overflow-hidden">
       {/* Main Content */}
       <main className="flex-1 flex flex-col relative overflow-hidden">
         {/* Header Area */}
-        <div className="px-margin-page py-12 border-b border-white/5 relative z-10 bg-background/80 backdrop-blur-sm sticky top-0">
-          <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="px-margin-page py-12 border-b border-white/5 z-10 bg-background/80 backdrop-blur-sm sticky top-0">
+          <div className="max-w-350 mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <h1 className="font-display-lg text-display-lg text-white mb-2 tracking-tight">
                 UI Library
@@ -150,7 +106,7 @@ function History() {
 
         {/* History Grid Area */}
         <div className="flex-1 p-margin-page overflow-y-auto z-0 pb-24">
-          <div className="max-w-[1400px] mx-auto space-y-12">
+          <div className="max-w-350 mx-auto space-y-12">
             {history.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-32 space-y-4 opacity-50 text-center animate-in fade-in duration-700">
                 <span className="material-symbols-outlined text-6xl">
@@ -202,22 +158,6 @@ function History() {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-background text-on-surface-variant font-hanken text-label-sm py-8 border-t border-white/5 opacity-80 hover:opacity-100 transition-opacity w-full mt-auto px-margin-page flex justify-between items-center z-10">
-        <div>&copy; 2026 SKYTE. Not affiliated with Spotify AB.</div>
-        <nav className="flex gap-6">
-          <a className="hover:text-primary transition-colors" href="#">
-            Privacy Policy
-          </a>
-          <a className="hover:text-primary transition-colors" href="#">
-            Terms of Service
-          </a>
-          <a className="hover:text-primary transition-colors" href="#">
-            API Documentation
-          </a>
-        </nav>
-      </footer>
     </div>
   );
 }
@@ -246,8 +186,8 @@ function HistorySection({
             className="bg-surface-container rounded-[16px] border border-white/5 overflow-hidden group relative flex flex-col transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 hover:border-primary/20 duration-300"
           >
             {/* Image Container */}
-            <div className="relative aspect-[9/16] w-full bg-[#0a0a0a] overflow-hidden border-b border-white/5">
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent z-10 pointer-events-none"></div>
+            <div className="relative aspect-9/16 w-full bg-[#0a0a0a] overflow-hidden border-b border-white/5">
+              <div className="absolute inset-0 bg-linear-to-b from-white/2 to-transparent z-10 pointer-events-none"></div>
               <img
                 src={entry.metadata.albumArt}
                 alt={entry.metadata.title}
@@ -257,7 +197,7 @@ function HistorySection({
               {/* Status Chip */}
               <div className="absolute top-3 right-3 z-20 bg-background/90 backdrop-blur-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(83,224,118,0.5)]"></span>
-                <span className="font-label-sm text-on-surface text-[10px] uppercase font-bold tracking-wider">
+                <span className="font-bold text-on-surface text-[10px] uppercase tracking-wider">
                   Saved
                 </span>
               </div>

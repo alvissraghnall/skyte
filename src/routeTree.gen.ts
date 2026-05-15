@@ -9,37 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TemplatesRouteImport } from './routes/templates'
-import { Route as ShowcaseRouteImport } from './routes/showcase'
-import { Route as HistoryRouteImport } from './routes/history'
 import { Route as EditorRouteImport } from './routes/editor'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
+import { Route as LayoutTemplatesRouteImport } from './routes/_layout.templates'
+import { Route as LayoutShowcaseRouteImport } from './routes/_layout.showcase'
+import { Route as LayoutHistoryRouteImport } from './routes/_layout.history'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 
-const TemplatesRoute = TemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShowcaseRoute = ShowcaseRouteImport.update({
-  id: '/showcase',
-  path: '/showcase',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HistoryRoute = HistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const EditorRoute = EditorRouteImport.update({
   id: '/editor',
   path: '/editor',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/_layout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutTemplatesRoute = LayoutTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutShowcaseRoute = LayoutShowcaseRouteImport.update({
+  id: '/showcase',
+  path: '/showcase',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutHistoryRoute = LayoutHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => LayoutRoute,
 } as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
@@ -48,28 +53,29 @@ const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof LayoutIndexRoute
   '/editor': typeof EditorRoute
-  '/history': typeof HistoryRoute
-  '/showcase': typeof ShowcaseRoute
-  '/templates': typeof TemplatesRoute
+  '/history': typeof LayoutHistoryRoute
+  '/showcase': typeof LayoutShowcaseRoute
+  '/templates': typeof LayoutTemplatesRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/editor': typeof EditorRoute
-  '/history': typeof HistoryRoute
-  '/showcase': typeof ShowcaseRoute
-  '/templates': typeof TemplatesRoute
+  '/history': typeof LayoutHistoryRoute
+  '/showcase': typeof LayoutShowcaseRoute
+  '/templates': typeof LayoutTemplatesRoute
+  '/': typeof LayoutIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_layout': typeof LayoutRouteWithChildren
   '/editor': typeof EditorRoute
-  '/history': typeof HistoryRoute
-  '/showcase': typeof ShowcaseRoute
-  '/templates': typeof TemplatesRoute
+  '/_layout/history': typeof LayoutHistoryRoute
+  '/_layout/showcase': typeof LayoutShowcaseRoute
+  '/_layout/templates': typeof LayoutTemplatesRoute
+  '/_layout/': typeof LayoutIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRouteTypes {
@@ -82,49 +88,26 @@ export interface FileRouteTypes {
     | '/templates'
     | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/editor' | '/history' | '/showcase' | '/templates' | '/api/trpc/$'
+  to: '/editor' | '/history' | '/showcase' | '/templates' | '/' | '/api/trpc/$'
   id:
     | '__root__'
-    | '/'
+    | '/_layout'
     | '/editor'
-    | '/history'
-    | '/showcase'
-    | '/templates'
+    | '/_layout/history'
+    | '/_layout/showcase'
+    | '/_layout/templates'
+    | '/_layout/'
     | '/api/trpc/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  LayoutRoute: typeof LayoutRouteWithChildren
   EditorRoute: typeof EditorRoute
-  HistoryRoute: typeof HistoryRoute
-  ShowcaseRoute: typeof ShowcaseRoute
-  TemplatesRoute: typeof TemplatesRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/templates': {
-      id: '/templates'
-      path: '/templates'
-      fullPath: '/templates'
-      preLoaderRoute: typeof TemplatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/showcase': {
-      id: '/showcase'
-      path: '/showcase'
-      fullPath: '/showcase'
-      preLoaderRoute: typeof ShowcaseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/history': {
-      id: '/history'
-      path: '/history'
-      fullPath: '/history'
-      preLoaderRoute: typeof HistoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/editor': {
       id: '/editor'
       path: '/editor'
@@ -132,12 +115,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof LayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_layout/': {
+      id: '/_layout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/templates': {
+      id: '/_layout/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof LayoutTemplatesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/showcase': {
+      id: '/_layout/showcase'
+      path: '/showcase'
+      fullPath: '/showcase'
+      preLoaderRoute: typeof LayoutShowcaseRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/history': {
+      id: '/_layout/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof LayoutHistoryRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/api/trpc/$': {
       id: '/api/trpc/$'
@@ -149,12 +160,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface LayoutRouteChildren {
+  LayoutHistoryRoute: typeof LayoutHistoryRoute
+  LayoutShowcaseRoute: typeof LayoutShowcaseRoute
+  LayoutTemplatesRoute: typeof LayoutTemplatesRoute
+  LayoutIndexRoute: typeof LayoutIndexRoute
+}
+
+const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutHistoryRoute: LayoutHistoryRoute,
+  LayoutShowcaseRoute: LayoutShowcaseRoute,
+  LayoutTemplatesRoute: LayoutTemplatesRoute,
+  LayoutIndexRoute: LayoutIndexRoute,
+}
+
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  LayoutRoute: LayoutRouteWithChildren,
   EditorRoute: EditorRoute,
-  HistoryRoute: HistoryRoute,
-  ShowcaseRoute: ShowcaseRoute,
-  TemplatesRoute: TemplatesRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
 }
 export const routeTree = rootRouteImport
