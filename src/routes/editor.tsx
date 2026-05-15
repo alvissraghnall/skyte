@@ -1,11 +1,11 @@
+/** biome-ignore-all lint/a11y/noLabelWithoutControl: <explanation> */
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { z } from "zod";
 import { useState } from "react";
+import { z } from "zod";
+import { DeviceChrome } from "#/components/DeviceChrome";
 import { Header } from "#/components/Header";
-import { historyStorage } from "#/lib/storage";
 
 import { SettingsModal } from "#/components/SettingsModal";
-import { getSpotifyTrack } from "#/server/spotify";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import {
@@ -15,9 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/components/ui/select";
-
 import { DEVICE_CONFIGS } from "#/lib/devices";
-import { DeviceChrome } from "#/components/DeviceChrome";
+import { historyStorage } from "#/lib/storage";
+import { getSpotifyTrack } from "#/server/spotify";
+import { CheckIcon, PauseIcon } from "@phosphor-icons/react";
 
 const editorSearchSchema = z.object({
   trackUrl: z.string().optional(),
@@ -61,25 +62,42 @@ function Editor() {
   const [aspectRatio, setAspectRatio] = useState(
     device && DEVICE_CONFIGS[device] ? device : "iphone-16-pro",
   );
-  const [timestamp, setTimestamp] = useState("00:38");
+  const [timestamp, setTimestamp] = useState("1:10"); // Matched to "Nostalgia" screenshot
   const [systemTime, setSystemTime] = useState(timeNow(DEVICE_CONFIGS[aspectRatio].type === "ios"));
   const [showTime, setShowTime] = useState(true);
   const [showStatus, setShowStatus] = useState(true);
+  
+  // NEW: Vibe State to mimic specific screenshots
+  // "red" matches Nostalgia, "blue" matches State of Mind
+  const [vibe, setVibe] = useState<"red" | "blue">("red"); 
 
   function timeNow(isIOS: boolean = false): string {
-    let _ = new Date(),
+    const _ = new Date(),
       h = ((_.getHours()<10 && !isIOS)?'0':'') + _.getHours(),
       m = (_.getMinutes()<10?'0':'') + _.getMinutes();
-    return h + ':' + m;
+    return `${h}:${m}`;
   }
 
   const getProgressWidth = () => {
     const [mins, secs] = timestamp.split(":").map(Number);
     if (Number.isNaN(mins) || Number.isNaN(secs)) return "25%";
     const totalSecs = mins * 60 + secs;
-    const duration = 200; // 3:20 = 200s
+    const duration = 105; // 1:45 for Nostalgia
     return `${Math.min(100, (totalSecs / duration) * 100)}%`;
   };
+
+  // Dynamic Gradients based on the two screenshots provided
+  const getVibeGradient = () => {
+    if (vibe === "red") {
+      return "linear-gradient(180deg, #4A1010 0%, #121212 60%)";
+    } else {
+      return "linear-gradient(180deg, #101a4a 0%, #121212 60%)";
+    }
+  };
+
+  const getLikeButtonColor = () => {
+    return "#121212";
+  }
 
   const exportDimensions = {
     width: DEVICE_CONFIGS[aspectRatio].width * 3,
@@ -103,8 +121,14 @@ function Editor() {
     setTimeout(() => setIsSaved(false), 2000);
   };
 
-  const defaultAlbumArt =
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuBuZQvUDIr14wpw_fE3SNPRrEerl9wCxWfrpfNx7DyoqIZsnCmpZEC204icWTBgEdXNvU9vWgEsgEkhgoH8jZyOFEpeyLTTQGakFk3reRRcHr9n68SMPKMPezik0sMi9UiyDFgj5RccvMPSOnkaaYLJnReeadOlzufRzWurRj1oIVj0Msy-yIklA0DqXhDP9aZhFI3ESp-eehRt-sjpiu2Y98X7KVaykDmLCCI271xlSaubU5DHo-Gr8eURqfydCBTYBIEQeW7lrzY";
+  // Fallback / Default Artwork if no track loaded
+  const defaultAlbumArt = vibe === "red" 
+    ? "https://i.scdn.co/image/ab67616d0000b27386e65e6133437614922e688d" // Placeholder similar to Nostalgia
+    : "https://i.scdn.co/image/ab67616d0000b273b05a30115a355f280920758c"; // Placeholder blue/artistic
+
+  const displayTitle = trackData?.title || (vibe === "red" ? "Nostalgia" : "STATE OF MIND");
+  const displayArtist = trackData?.artist || (vibe === "red" ? "Zinoleesky" : "DJ Tunez, Wizkid");
+  const displayArt = trackData?.albumArt || defaultAlbumArt;
 
   return (
     <div className="flex flex-col h-screen bg-background text-on-surface font-body-md overflow-hidden">
@@ -214,117 +238,102 @@ function Editor() {
         {/* Main Workspace Canvas */}
         <main className="ml-sidebar-width flex-1 flex h-full relative bg-background overflow-hidden">
           <div className="flex-1 flex flex-col relative pt-100 overflow-auto h-full animate-in fade-in duration-500 custom-scrollbar">
-            {/* Wrapper to center mockup with padding to prevent cutoff */}
             <div className="min-h-full flex items-center justify-center p-12 lg:p-20">
-              {/* Atmospheric Background Glow - moved inside to scroll with content if needed, or kept relative to viewport? Keeping it relative to container is usually better for "canvas" feel. */}
+              {/* Atmospheric Background Glow */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-[#B02626]/10 rounded-full blur-[120px] pointer-events-none opacity-60"></div>
               <div className="absolute top-1/3 left-1/3 w-100 h-100 bg-[#1a1a1a]/30 rounded-full blur-[80px] pointer-events-none"></div>
 
-              {/* Device Chrome Wrapper */}
               <DeviceChrome
                 device={DEVICE_CONFIGS[aspectRatio]}
                 showTime={showTime}
                 showStatus={showStatus}
                 systemTime={systemTime}
+                bg={getVibeGradient}
               >
-                {/* Simulated Screen Content (Spotify Now Playing) */}
-                <div className="w-full h-full bg-linear-to-b from-[#4A1010] to-black pt-20 px-6 pb-12 flex flex-col relative">
-                  {/* Header inside App */}
-                  <div className="flex justify-between items-center w-full mb-8 text-white">
-                    <span className="material-symbols-outlined text-[28px]">
-                      keyboard_arrow_down
+                {/* HIGH FIDELITY SPOTIFY SCREEN */}
+                <div 
+                  className="w-full h-full flex flex-col text-white relative pt-16"
+                  style={{ background: getVibeGradient() }}
+                >
+                  {/* 1. Top Navigation Bar */}
+                  <div className="flex justify-between items-center px-6 py-4 z-20">
+                    <span className="material-symbols-outlined text-[28px] cursor-pointer">keyboard_arrow_down</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase opacity-70 text-center">
+                      Playing from playlist
                     </span>
-                    <span className="font-label-sm tracking-widest uppercase opacity-80 text-[10px]">
-                      Playing from Album
-                    </span>
-                    <span className="material-symbols-outlined text-[28px]">
-                      more_horiz
-                    </span>
+                    <span className="material-symbols-outlined text-[28px] cursor-pointer">more_horiz</span>
                   </div>
-                  {/* Album Art */}
-                  <div className="w-full aspect-square bg-surface-container-highest rounded-lg mb-10 shadow-2xl overflow-hidden relative">
-                    <img
-                      alt="Album Cover"
-                      className="w-full h-full object-cover"
-                      src={trackData?.albumArt || defaultAlbumArt}
-                    />
-                  </div>
-                  {/* Track Info */}
-                  <div className="flex justify-between items-center mb-8">
-                    <div className="flex flex-col">
-                      <h2 className="font-headline-md text-white text-[24px] mb-1 truncate w-64">
-                        {trackData?.title || "Blinding Lights"}
-                      </h2>
-                      <span className="font-body-md text-[#b3b3b3] text-[18px] truncate w-64">
-                        {trackData?.artist || "The Weeknd"}
-                      </span>
-                    </div>
-                    <span
-                      className="material-symbols-outlined text-primary text-[32px]"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      favorite
-                    </span>
-                  </div>
-                  {/* Progress Bar Area */}
-                  <div className="w-full mb-8">
-                    <div className="w-full h-1 bg-white/20 rounded-full relative group cursor-pointer mb-3">
-                      <div
-                        className="absolute top-0 left-0 h-full bg-white group-hover:bg-primary rounded-full transition-all duration-300"
-                        style={{ width: getProgressWidth() }}
-                      ></div>
-                      <div
-                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{ left: getProgressWidth() }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-[#b3b3b3] font-label-sm text-[12px]">
-                      <span>{timestamp}</span>
-                      <span>3:20</span>
+
+                  {/* 2. Album Art */}
+                  {/* Shadow logic: Large diffused shadow at bottom, smaller sharp shadow for depth */}
+                  <div className="px-6 mb-8 z-10">
+                    <div className="w-full aspect-square bg-[#222] rounded-md shadow-[0_8px_24px_rgba(0,0,0,0.5)] overflow-hidden relative">
+                        {/* Inner subtle shine on the art */}
+                        <div className="absolute inset-0 bg-linear-to-tr from-white/5 to-transparent pointer-events-none z-10"></div>
+                        <img
+                          alt="Album Cover"
+                          className="w-full h-full object-cover"
+                          src={displayArt}
+                        />
                     </div>
                   </div>
 
-                  {/* Playback Controls */}
-                  <div className="flex justify-between items-center w-full mb-8">
-                    <span className="material-symbols-outlined text-[#b3b3b3] text-[28px] hover:text-white transition-colors">
-                      shuffle
-                    </span>
-                    <span
-                      className="material-symbols-outlined text-white text-[42px] hover:scale-110 transition-transform"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      skip_previous
-                    </span>
-                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer">
-                      <span
-                        className="material-symbols-outlined text-black text-[42px]"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        pause
-                      </span>
+                  {/* 3. Track Info & Action Row */}
+                  <div className="px-8 flex justify-between items-end mb-8 z-10">
+                    <div className="flex-1 mr-4 overflow-hidden">
+                      <h1 className="text-[26px] font-bold leading-tight mb-1 text-white truncate tracking-tight">
+                        {displayTitle}
+                      </h1>
+                      <p className="text-[17px] text-white/70 font-medium truncate">
+                        {displayArtist}
+                      </p>
                     </div>
-                    <span
-                      className="material-symbols-outlined text-white text-[42px] hover:scale-110 transition-transform"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      skip_next
-                    </span>
-                    <span className="material-symbols-outlined text-[#b3b3b3] text-[28px] hover:text-white transition-colors">
-                      repeat
-                    </span>
+                    <div className="w-8 h-8 bg-[#1DB954] rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+                      <CheckIcon alt="Like" className="w-5 h-5" style={{ color: getLikeButtonColor() }} size={4} />
+                    </div>
                   </div>
-                  {/* Bottom Context Actions */}
-                  <div className="mt-auto flex justify-between items-center text-[#b3b3b3] w-full px-2">
-                    <span className="material-symbols-outlined text-[24px]">
-                      devices
-                    </span>
-                    <div className="flex gap-6">
-                      <span className="material-symbols-outlined text-[24px]">
-                        share
-                      </span>
-                      <span className="material-symbols-outlined text-[24px]">
-                        queue_music
-                      </span>
+
+                  {/* 4. Scrubber / Progress Bar */}
+                  <div className="w-full mb-8 px-8 group cursor-pointer z-10">
+                    {/* The track */}
+                    <div className="w-full h-[4px] bg-white/20 rounded-full relative overflow-hidden">
+                      {/* The fill */}
+                      <div
+                        className="absolute top-0 left-0 h-full bg-white group-hover:bg-[#1DB954] transition-colors duration-200"
+                        style={{ width: getProgressWidth() }}
+                      />
+                      {/* The handle (thumb) - invisible by default, shows on hover */}
+                      <div
+                        className="absolute top-1/2 -mt-1.5 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        style={{ left: `calc(${getProgressWidth()} - 6px)` }}
+                      />
+                    </div>
+                    {/* Timestamps */}
+                    <div className="flex justify-between text-[11px] text-white/60 font-medium mt-2 font-mono tracking-wide">
+                      <span>{timestamp}</span>
+                      <span>1:45</span>
+                    </div>
+                  </div>
+
+                  {/* 5. Playback Controls */}
+                  <div className="flex justify-between items-center w-full px-8 mb-10 z-10">
+                    <LocalIcon name="shuffle" alt="Shuffle" className="w-7 h-7 bg-white opacity-90 hover:opacity-100 transition-opacity cursor-pointer" />
+                    <LocalIcon name="previous" alt="Previous" className="w-7 h-7 bg-white hover:scale-105 transition-transform cursor-pointer" />
+                    {/* Play/Pause Button */}
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shadow-lg shadow-white/10">
+                      {/* <LocalIcon name="pause" alt="Pause" className="w-8 h-8" /> */}
+                      <PauseIcon alt="Pause" className="w-5 h-5" size={6} />
+                    </div>
+                    <LocalIcon name="next" alt="Next" className="w-7 h-7 bg-white hover:scale-105 transition-transform cursor-pointer" />
+                    <LocalIcon name="repeat" alt="Repeat" className="w-7 h-7 bg-white opacity-90 hover:opacity-100 transition-opacity cursor-pointer" />
+                  </div>
+
+                  {/* 6. Bottom Context Actions (Devices, Share, Queue) */}
+                  <div className="mt-auto flex justify-between items-center px-8 pb-12 z-10">
+                    <LocalIcon name="connecttoadevice" alt="Devices" className="w-6 h-6 bg-white opacity-95 hover:opacity-100 transition-opacity cursor-pointer" />
+                    <div className="flex gap-8">
+                      <LocalIcon name="share" alt="Share" className="w-6 h-6 bg-white opacity-95 hover:opacity-100 transition-opacity cursor-pointer" />
+                      <LocalIcon name="queue" alt="Queue" className="w-6 h-6 bg-white opacity-95 hover:opacity-100 transition-opacity cursor-pointer" />
                     </div>
                   </div>
                 </div>
@@ -352,6 +361,30 @@ function Editor() {
             </Button>
           </div>
           <div className="p-6 flex flex-col gap-8 overflow-y-auto custom-scrollbar flex-1">
+            
+            {/* vibe Selector */}
+            <div className="flex flex-col gap-3">
+              <label className="font-label-md text-on-surface-variant">
+                Screenshot Vibe
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant={vibe === "red" ? "default" : "outline"}
+                  className="h-auto py-3 font-label-sm"
+                  onClick={() => setVibe("red")}
+                >
+                  Nostalgia (Red)
+                </Button>
+                <Button 
+                  variant={vibe === "blue" ? "default" : "outline"}
+                  className="h-auto py-3 font-label-sm"
+                  onClick={() => setVibe("blue")}
+                >
+                  State of Mind (Blue)
+                </Button>
+              </div>
+            </div>
+
             {/* Aspect Ratio Control */}
             <div className="flex flex-col gap-3">
               <label className="font-label-md text-on-surface-variant">
@@ -361,7 +394,7 @@ function Editor() {
                 <SelectTrigger className="w-full bg-surface-container-lowest border-white/10 text-on-surface font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all h-auto">
                   <SelectValue placeholder="Select device model..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-surface-container-lowest cursor-pointer">
                   {Object.entries(DEVICE_CONFIGS).map(([id, config]) => (
                     <SelectItem key={id} value={id}>
                       {config.name}
@@ -370,6 +403,7 @@ function Editor() {
                 </SelectContent>
               </Select>
             </div>
+
             {/* Timestamp Control */}
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center">
@@ -395,6 +429,7 @@ function Editor() {
                 Adjusts the progress bar position.
               </p>
             </div>
+
             {/* System Time Control */}
             <div className="flex flex-col gap-3">
               <label className="font-label-md text-on-surface-variant">
@@ -412,6 +447,7 @@ function Editor() {
                 />
               </div>
             </div>
+
             {/* Status Bar Toggles */}
             <div className="flex flex-col gap-3">
               <label className="font-label-md text-on-surface-variant">
@@ -442,6 +478,7 @@ function Editor() {
                 </label>
               </div>
             </div>
+
             {/* Quality Settings */}
             <div className="flex flex-col gap-3">
               <label className="font-label-md text-on-surface-variant">
@@ -460,6 +497,7 @@ function Editor() {
               </div>
             </div>
           </div>
+          
           {/* Primary Action Area */}
           <div className="p-6 mt-auto border-t border-white/5 bg-surface-container-lowest/50 space-y-3">
             <Button
@@ -495,5 +533,33 @@ function Editor() {
         </aside>
       </div>
     </div>
+  );
+}
+
+function LocalIcon({
+  name,
+  className,
+  alt,
+}: {
+  name: string;
+  className?: string;
+  alt?: string;
+}) {
+  return (
+    <div
+      className={`shrink-0 ${className}`}
+      role="img"
+      aria-label={alt}
+      style={{
+        WebkitMaskImage: `url(/icons/${name}.svg)`,
+        WebkitMaskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskImage: `url(/icons/${name}.svg)`,
+        maskSize: "contain",
+        maskRepeat: "no-repeat",
+        maskPosition: "center",
+      }}
+    />
   );
 }
